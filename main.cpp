@@ -12,25 +12,26 @@ class FSMAction{
         FSMAction(std::string message){
             this->message = message;
         }
+
         void print(){
             std::cout << this->message << std::endl;
-        } 
+        }
 };
 
 template <typename T>
 class FSMState {
-    static int counter;
-
     private:
         FSMAction action;
         std::map<T,FSMState*> transitions;
+        bool end_state = false; // need this variable?
+
     public:
         int id;
 
         FSMState(){};
 
         FSMState(int id){
-            std::string message = "This state: " + std::to_string(this->counter);
+            std::string message = "This state: " + std::to_string(id);
             this->action = FSMAction(message);
             this->id = id;
         };
@@ -45,6 +46,10 @@ class FSMState {
             this->action = action;
             this->id = id;
         };
+
+        void DoAction(){
+            this->action.print();
+        }
 
         void AddTransition(T event, FSMState<T>& to_state){
             this->transitions[event] = &to_state;
@@ -64,8 +69,8 @@ class FSMState {
 template <typename T>
 class FSM{
     private:
-        FSMState<T> current_state;
-        FSMState<T> init_state;
+        FSMState<T>* current_state;
+        FSMState<T>* init_state;
 
         // NO NEED WITHOUT MERGE OR INTERSCATION
         // CAN THINK OF A WAY FOR FIND ALL STATES
@@ -76,14 +81,21 @@ class FSM{
     public:
         FSM(){};
         FSM(FSMState<T> init_state){
-            this->init_state = init_state;
-            this->current_state = init_state;
+            this->init_state = &init_state;
+            this->current_state = &init_state;
         };
 
+/*        FSM(std::vector<std::vector<T>> table_of_transitions){
+            for(auto q_transitions : table_of_transitions){
+                for(T in )
+            }
+        }
+*/
         void Run(std::string input){
-            for (size_t i = 0; i != input.size(); ++i){
-                // DO SWITCH BY TRANSITIONS
-            }    
+            for (size_t i = 0; i < input.size(); ++i){
+                this->current_state = this->current_state->GetTransitionByEvent(input[i]);
+                this->current_state->DoAction();
+            }
         };
 
         void AddState(FSMState<T> state){
@@ -137,9 +149,6 @@ class FSM{
 };
 
 template <typename T>
-int FSMState<T>::counter = 0;
-
-template <typename T>
 std::ostream& operator<<(std::ostream& out, const FSM<T>& fsm)
 {
     return out << std::string(fsm);
@@ -147,25 +156,25 @@ std::ostream& operator<<(std::ostream& out, const FSM<T>& fsm)
 
 
 int main(){
-    FSMState<char> init_state(0);
-    FSMState<char> first_state(1);
-    FSMState<char> second_state(2);
-    FSMState<char> final_state(3,FSMAction("Final state :)"));
+    FSMState<char> init_state(0, FSMAction("Init state"));
+    FSMState<char> first_state(1, FSMAction("This state for 'a' symbol"));
+    FSMState<char> second_state(2, FSMAction("This state for 'b' symbol"));
+    FSMState<char> final_state(3,FSMAction("Final state for 'c'"));
 
     init_state.AddTransition('a',first_state);
     init_state.AddTransition('b',init_state);
     init_state.AddTransition('c',init_state);
 
-    first_state.AddTransition('a',second_state);
+    first_state.AddTransition('a',first_state);
     first_state.AddTransition('b',second_state);
     first_state.AddTransition('c',init_state);
 
-    second_state.AddTransition('a',init_state);
+    second_state.AddTransition('a',first_state);
     second_state.AddTransition('c',final_state);
     second_state.AddTransition('b',second_state);
 
-    final_state.AddTransition('a',init_state);
-    final_state.AddTransition('c',init_state);
+    final_state.AddTransition('a',first_state);
+    final_state.AddTransition('c',final_state);
     final_state.AddTransition('b',init_state);
 
     FSM<char> fsm(init_state);
@@ -178,6 +187,8 @@ int main(){
     fsm.AddEvent('c');
 
     fsm.print();
+
+    fsm.Run("aaaabbbbbcccc");
 
     // merge_fsm = fsm_1 + fsm_2;
     // intersaction_fsm = fsm * fsm_2;
