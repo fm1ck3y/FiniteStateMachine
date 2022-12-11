@@ -23,7 +23,7 @@ class FSMState {
 
     private:
         FSMAction action;
-        std::map<T,FSMState*> transitions;
+        std::map<T,FSMState&> transitions;
     public:
         int id;
 
@@ -47,18 +47,24 @@ class FSMState {
         };
 
         void AddTransition(T event, FSMState<T>& to_state){
-            this->transitions[event] = &to_state;
+            //this->transitions.insert(std::pair<T,FSMState&>(event,to_state));
+            this->transitions[event] = to_state;
         };
 
         FSMState<T>* GetTransitionByEvent(T event){
+            //for (auto transition : this->transitions){
+            //    if (transition.first == event){
+            //        return transition;
+            //    }
             try {
-                return this->transitions[event];
+                return &this->transitions[event];
             }
-            catch (const std::out_of_range&){
+            catch (){
                 std::cout << "Transition not found :(" << std::endl;
                 return NULL;
             }
-        }
+        };
+    };
 };
 
 template <typename T>
@@ -101,17 +107,13 @@ class FSM{
                 array[i] = new int[this->events.size()];
                 for(size_t j = 0; j != this->events.size(); j++){
                     auto transition = this->states[i].GetTransitionByEvent(this->events[j]);
-                    if (transition == NULL){
-                        array[i][j] = -1;
-                        continue;
-                    }
                     array[i][j] = transition->id;
                 }
             }
             return array;
         };
 
-        static void Concat(FSM* fsm_1, FSM* fsm_2){
+        static void Merge(FSM* fsm_1, FSM* fsm_2){
             // DO MERGE 
         };
         static void Intersaction(FSM* fsm_1, FSM* fsm_2){
