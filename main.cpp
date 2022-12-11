@@ -23,11 +23,9 @@ class FSMState {
     private:
         FSMAction action;
         std::map<T,FSMState*> transitions;
-        bool end_state = false; // need this variable?
-
     public:
         int id;
-
+        bool end_state = false;
         FSMState(){};
 
         FSMState(int id, bool end_state=false){
@@ -132,21 +130,37 @@ class FSM{
         static void Concat(FSM* fsm_1, FSM* fsm_2){
             // DO MERGE 
         };
+
         static void Intersaction(FSM* fsm_1, FSM* fsm_2){
             // DO MERGE , BUT CHANGE FINAL STATES
         };
+
         friend FSM& operator+(const FSM lfsm, const FSM& rfsm){
             return nullptr;
         };
+
         friend FSM& operator*(const FSM lfsm, const FSM& rfsm)
         {
             return nullptr;
         };
+
         void print(){
             int** array = this->GenerateMatrix();
-            for(size_t i = 0; i != this->states.size(); i++){
+            std::cout << "q - state, qe - end state" << std::endl;
+            
+            std::cout << "\t";
+            for(size_t i = 0; i < this->events.size(); i++)
+                std::cout << this->events[i] << "\t";
+
+            for(size_t i = 0; i < this->states.size(); i++){
                 std::cout << std::endl;
-                for(size_t j = 0; j != this->events.size(); j++){
+                if (this->states[i].end_state)
+                    std::cout << "qe" << i << "\t";
+                else
+                    std::cout << "q" << i << "\t";
+
+
+                for(size_t j = 0; j < this->events.size(); j++){
                     std::cout << array[i][j] << "\t";
                 }        
             }
@@ -194,7 +208,7 @@ int main(){
 
     fsm.print();
 
-    fsm.Run("aaaabbbbbcccc");
+//    fsm.Run("aaaabbbbbcccc");
 
     // merge_fsm = fsm_1 + fsm_2;
     // intersaction_fsm = fsm * fsm_2;
