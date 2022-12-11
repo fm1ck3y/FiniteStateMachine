@@ -30,21 +30,24 @@ class FSMState {
 
         FSMState(){};
 
-        FSMState(int id){
+        FSMState(int id, bool end_state=false){
             std::string message = "This state: " + std::to_string(id);
             this->action = FSMAction(message);
             this->id = id;
+            this->end_state = end_state;
         };
 
-        FSMState(int id, FSMAction action){
+        FSMState(int id, FSMAction action, bool end_state=false){
             this->action = action;
             this->id = id;
+            this->end_state = end_state;
         };
 
-        FSMState(int id, FSMAction action, std::map<T,FSMState&> transitions){
+        FSMState(int id, FSMAction action, std::map<T,FSMState&> transitions, bool end_state=false){
             this->transitions = transitions;
             this->action = action;
             this->id = id;
+            this->end_state = end_state;
         };
 
         void DoAction(){
@@ -93,6 +96,7 @@ class FSM{
 */
         void Run(std::string input){
             for (size_t i = 0; i < input.size(); ++i){
+                // need check, that T(event) contains in list of events
                 this->current_state = this->current_state->GetTransitionByEvent(input[i]);
                 this->current_state->DoAction();
             }
@@ -110,6 +114,8 @@ class FSM{
             // VARIABLE 'STATES' CREATE FOR THIS ;)
             int** array = new int*[this->states.size()];
             for(size_t i = 0; i != this->states.size(); i++){
+                // need tag that this state end
+                // HOW?
                 array[i] = new int[this->events.size()];
                 for(size_t j = 0; j != this->events.size(); j++){
                     auto transition = this->states[i].GetTransitionByEvent(this->events[j]);
@@ -159,7 +165,7 @@ int main(){
     FSMState<char> init_state(0, FSMAction("Init state"));
     FSMState<char> first_state(1, FSMAction("This state for 'a' symbol"));
     FSMState<char> second_state(2, FSMAction("This state for 'b' symbol"));
-    FSMState<char> final_state(3,FSMAction("Final state for 'c'"));
+    FSMState<char> final_state(3,FSMAction("Final state for 'c'"), true);
 
     init_state.AddTransition('a',first_state);
     init_state.AddTransition('b',init_state);
