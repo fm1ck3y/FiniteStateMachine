@@ -3,6 +3,9 @@
 #include <string>
 #include <map>
 
+#pragma once
+#ifndef FSMSTATE_H
+#define FSMSTATE_H
 template <typename T>
 class FSMState {
     private:
@@ -75,3 +78,4 @@ class FSMState {
         
         friend bool operator==(const FSMState<T>& lhs, const FSMState<T>& rhs) { return lhs.id == rhs.id; }
 };
+#endif
