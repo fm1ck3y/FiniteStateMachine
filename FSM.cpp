@@ -17,6 +17,7 @@ class FSM{
         std::vector<T> events;
 
     public:
+        
         const std::vector<FSMState<T>>& getStates() const { return this->states; }
         const std::vector<T>& getEvents() const { return this->events; }
 
@@ -24,24 +25,33 @@ class FSM{
             this->init_state = NULL;
             this->current_state = NULL;
         };
-        FSM(FSMState<T> init_state){
-            this->init_state = &init_state;
-            this->current_state = &init_state;
+
+        FSM(FSMState<T>* init_state){
+            this->init_state = init_state;
+            this->current_state = init_state;
         };
 
-        FSM(std::vector<T> events, std::vector<std::vector<int>> array, std::vector<FSMAction> actions, std::vector<int> end_states){
+        FSM(std::vector<T> events, std::vector<std::vector<int>> array, std::vector<int> end_states,  std::vector<FSMAction> actions) {
             this->addEvents(events);
 
             for (size_t i = 0; i < array.size(); i++){
-                FSMState<T> _state = FSMState<T>(actions[i],std::find(end_states.begin(), end_states.end(), i));
-                this->addState(_state);
+                auto end_state = std::find(end_states.begin(), end_states.end(), i) != end_states.end();
+                if (actions.size() >= i+1){
+                    FSMState<T> state(i, actions[i], end_state);
+                    this->addState(&state);
+                } else {
+                    FSMState<T> state(i, end_state);
+                    this->addState(&state);
+                }
             }
 
             for (size_t i = 0; i < array.size(); i++){
-                for (size_t j = 0; j < array.size(); j++){
-                    this->states[i].addTransition(this->events[j], array[i][j]);
+                for (size_t j = 0; j < array[i].size(); j++){
+                    this->states[i].addTransition(this->events[j], this->states[array[i][j]]);
                 }
             }
+            this->init_state = &this->states[0];
+            this->current_state = &this->states[0];
         }
 
         void run(std::string input){
@@ -50,33 +60,34 @@ class FSM{
                 this->current_state = this->current_state->getStateByEvent(input[i]);
                 this->current_state->doAction();
             }
+            this->current_state = this->init_state;
         };
 
         FSMState<T>* addState(bool end_state, FSMAction action){
-            FSMState<T> state (this->id_counter, action, end_state);
+            FSMState<T>* state (this->id_counter, action, end_state);
             this->addState(state);
             return &this->states[this->states.size()-1];
         }
 
         FSMState<T>* addState(FSMAction action){
-            FSMState<T> state (this->id_counter, action, false);
+            FSMState<T>* state (this->id_counter, action, false);
             this->addState(state);
             return &this->states[this->states.size()-1];
         }
 
         FSMState<T>* addState(){
-            FSMState<T> state (this->id_counter);
+            FSMState<T>* state (this->id_counter);
             this->addState(state);
             return &this->states[this->states.size()-1];
         }
 
-        void addState(FSMState<T> state){
+        void addState(FSMState<T>* state){
             if (this->init_state == NULL || this->current_state == NULL){
-                this->init_state = &state;
-                this->current_state = &state;
+                this->init_state = state;
+                this->current_state = state;
             }
             this->id_counter++;
-            this->states.push_back(state);
+            this->states.push_back(*state);
         };
 
         void addEvent(T event){
@@ -90,12 +101,14 @@ class FSM{
 
         int** generateMatrix(){
             // VARIABLE 'STATES' CREATE FOR THIS ;)
+
+            // for (auto state : states) std::cout << state.id << std::endl;
+
             int** array = new int*[this->states.size()];
             for(size_t i = 0; i != this->states.size(); i++){
                 array[i] = new int[this->events.size()];
                 for(size_t j = 0; j != this->events.size(); j++){
                     auto transition = this->states[i].getStateByEvent(this->events[j]);
-                    std::cout << this->events[j] << " " << transition << std::endl;
                     if (transition == NULL){
                         array[i][j] = -1;
                         continue;
@@ -117,7 +130,7 @@ class FSM{
             std::vector<T> eventsFSM1 = fsm1->getEvents(); 
             std::vector<FSMState<T>> states;
             int id = 0;
-
+            
             for (auto stateFSM1 : statesFSM1){
                 for (auto stateFSM2 : statesFSM2){
                     states.push_back(FSMState<T>(id, stateFSM1.getAction()));
@@ -130,13 +143,13 @@ class FSM{
 
             for (size_t i=0; i < statesFSM1.size(); i++){
                 for (size_t j=0; j < statesFSM2.size(); j++){
-                    for(auto event : eventsFSM1){
+                    for(auto event : eventsFSM1){                        
                         // FIND STATE BY EVENT IN LIST OF TRANSITIONS
                         FSMState<T>* stateByEventFSM1 = statesFSM1[i].getStateByEvent(event);
                         FSMState<T>* stateByEventFSM2 = statesFSM2[j].getStateByEvent(event);
-
+                        
                         // FIND INDEX
-                        auto itr = std::find(statesFSM1.begin(), statesFSM2.end(), *stateByEventFSM1);
+                        auto itr = std::find(statesFSM1.begin(), statesFSM1.end(), *stateByEventFSM1);
                         int indexStateByEventFSM1 = std::distance(statesFSM1.begin(), itr);
                         itr = std::find(statesFSM2.begin(), statesFSM2.end(), *stateByEventFSM2);
                         int indexStateByEventFSM2 = std::distance(statesFSM2.begin(), itr);
@@ -145,39 +158,40 @@ class FSM{
                             event, states[indexStateByEventFSM1*statesFSM1.size()+indexStateByEventFSM2]
                         );
                     }
-                    new_fsm->addState(states[i*statesFSM1.size()+j]);
+                    new_fsm->addState(&states[i*statesFSM1.size()+j]);
                 }
             }
+
             // GOOD OUTPUT
-            // new_fsm->print();
+            new_fsm->print();
         }
 
-        static void concat(FSM* fsm1, FSM* fsm2, FSM* new_fsm){
-            FSM<T>::join(fsm1, fsm2, new_fsm);
+        static void concat(FSM* fsm1, FSM* fsm2){
+            FSM<char> new_fsm;
+            FSM<T>::join(fsm1, fsm2, &new_fsm);
             std::vector<FSMState<T>> statesFSM1 = fsm1->getStates();
             std::vector<FSMState<T>> statesFSM2 = fsm2->getStates();
             for (size_t i=0; i < statesFSM1.size(); i++){
                 for (size_t j=0; j < statesFSM2.size(); j++){
-                    if (statesFSM1[i].end_state && statesFSM2[i].end_state)
-                        new_fsm->updateEndState(i*statesFSM1.size()+j+1, statesFSM1[i].end_state);
+                    if (statesFSM1[i].end_state || statesFSM2[j].end_state)
+                        new_fsm.updateEndState(i*statesFSM1.size()+j+1, true);
                 }
             }
-            new_fsm->print();
+            // new_fsm.print();
         };
 
-        static void intersaction(FSM* fsm1, FSM* fsm2, FSM* new_fsm){
-            FSM<T>::join(fsm1, fsm2, new_fsm);
+        static void intersaction(FSM* fsm1, FSM* fsm2){
+            FSM<char> new_fsm;
+            FSM<T>::join(fsm1, fsm2, &new_fsm);
             std::vector<FSMState<T>> statesFSM1 = fsm1->getStates();
             std::vector<FSMState<T>> statesFSM2 = fsm2->getStates();
             for (size_t i=0; i < statesFSM1.size(); i++){
                 for (size_t j=0; j < statesFSM2.size(); j++){
-                    if (statesFSM1[i].end_state && statesFSM2[i].end_state)
-                        new_fsm->updateEndState(i*statesFSM1.size()+j+1, true);
-                    else
-                        new_fsm->updateEndState(i*statesFSM1.size()+j+1, false);
+                    if (statesFSM1[i].end_state && statesFSM2[j].end_state)
+                        new_fsm.updateEndState(i*statesFSM1.size()+j+1, true);
                 }
             }
-            new_fsm->print();
+            // new_fsm.print();
         };
 
         friend FSM& operator+(const FSM lfsm, const FSM& rfsm){

@@ -64,7 +64,6 @@ class FSMState {
         };
 
         FSMState<T>* getStateByEvent(T event){
-            std::cout << this << " size:" << this->transitions.size() << std::endl;
             try {
                 return this->transitions[event];
             }
