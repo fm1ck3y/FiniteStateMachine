@@ -6,7 +6,7 @@
 template <typename T>
 class FSMState {
     private:
-        FSMAction action;
+        FSMAction<T> action;
         
     public:
         int id;
@@ -18,26 +18,26 @@ class FSMState {
             this->end_state = end_state;
             this->id = id;
             std::string message = "This state: " + std::to_string(id);
-            this->action = FSMAction(message);
+            this->action = FSMAction<T>(message);
         };
 
-        FSMState(int id, FSMAction action, bool end_state=false){
+        FSMState(int id, FSMAction<T> action, bool end_state=false){
             this->action = action;
             this->id = id;
             this->end_state = end_state;
         };
 
-        FSMState(int id, FSMAction action, std::map<T,FSMState&> transitions, bool end_state=false){
+        FSMState(int id, FSMAction<T> action, std::map<T,FSMState&> transitions, bool end_state=false){
             this->transitions = transitions;
             this->action = action;
             this->id = id;
             this->end_state = end_state;
         };
 
-        const FSMAction& getAction() const { return this->action; }
+        const FSMAction<T>& getAction() const { return this->action; }
 
-        void doAction(){
-            this->action.print();
+        void doAction(T event){
+            this->action(event);
         }
 
         void addTransition(T event, FSMState<T>& to_state){

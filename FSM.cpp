@@ -31,7 +31,7 @@ class FSM{
             this->current_state = init_state;
         };
 
-        FSM(std::vector<T> events, std::vector<std::vector<int>> array, std::vector<int> end_states,  std::vector<FSMAction> actions) {
+        FSM(std::vector<T> events, std::vector<std::vector<int>> array, std::vector<int> end_states,  std::vector<FSMAction<T>> actions) {
             this->addEvents(events);
 
             for (size_t i = 0; i < array.size(); i++){
@@ -58,18 +58,18 @@ class FSM{
             for (size_t i = 0; i < input.size(); ++i){
                 // need check, that T(event) contains in list of events
                 this->current_state = this->current_state->getStateByEvent(input[i]);
-                this->current_state->doAction();
+                this->current_state->doAction(input[i]);
             }
             this->current_state = this->init_state;
         };
 
-        FSMState<T>* addState(bool end_state, FSMAction action){
+        FSMState<T>* addState(bool end_state, FSMAction<T> action){
             FSMState<T>* state (this->id_counter, action, end_state);
             this->addState(state);
             return &this->states[this->states.size()-1];
         }
 
-        FSMState<T>* addState(FSMAction action){
+        FSMState<T>* addState(FSMAction<T> action){
             FSMState<T>* state (this->id_counter, action, false);
             this->addState(state);
             return &this->states[this->states.size()-1];
