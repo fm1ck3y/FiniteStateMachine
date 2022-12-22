@@ -10,7 +10,7 @@ class FSM{
         std::vector<FSMState<T>> states;
         std::vector<T> events;
         int** generateMatrix();
-        void join(const FSM<T>& fsm1, const FSM<T>& fsm2);
+        void join(const FSM<T>& fsm1, const FSM<T>& fsm2, bool isConcat, bool isIntersaction);
 
     public:
         FSM();

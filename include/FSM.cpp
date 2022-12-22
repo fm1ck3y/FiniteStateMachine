@@ -112,23 +112,22 @@ void FSM<T>::addEvents(std::vector<T> events){
 }
 
 template <typename T>
-void FSM<T>::updateEndState(int id, bool end_state){
-    for(auto state : this->states)
-        if (state.id == id){ state.end_state = end_state; } //std::cout << "id: " << id << std::endl;}
-    // for(auto state : this->states) std::cout << state.end_state << std::endl;
-}
-
-template <typename T>
-void FSM<T>::join(const FSM<T>& fsm1, const FSM<T>& fsm2){
+void FSM<T>::join(const FSM<T>& fsm1, const FSM<T>& fsm2, bool isConcat, bool isIntersaction ){
     std::vector<FSMState<T>> statesFSM1 = fsm1.getStates();
     std::vector<FSMState<T>> statesFSM2 = fsm2.getStates();
     std::vector<T> eventsFSM1 = fsm1.getEvents(); 
     
     int id = 0;
     
-    for (auto stateFSM1 : statesFSM1){
-        for (auto stateFSM2 : statesFSM2){
-            FSMState<T> state (id, stateFSM1.getAction());
+    for (size_t i = 0; i < statesFSM1.size(); i++){
+        for (size_t j = 0; j < statesFSM2.size(); j++){
+            bool end_state = false;
+            if (isIntersaction && (statesFSM1[i].end_state && statesFSM2[j].end_state))
+                end_state = true;
+            if (isConcat && (statesFSM1[i].end_state || statesFSM2[j].end_state))
+                end_state = true;
+
+            FSMState<T> state (id, statesFSM1[i].getAction(), end_state);
             this->addState(&state);
             id++;
         }
@@ -161,16 +160,7 @@ void FSM<T>::join(const FSM<T>& fsm1, const FSM<T>& fsm2){
 template <typename T>
 std::shared_ptr<FSM<T>> FSM<T>::concat(const FSM<T>& fsm1, const FSM<T>& fsm2){
     std::shared_ptr<FSM<char>> new_fsm(new FSM<char>);
-    new_fsm->join(fsm1, fsm2);
-    std::vector<FSMState<T>> statesFSM1 = fsm1.getStates();
-    std::vector<FSMState<T>> statesFSM2 = fsm2.getStates();
-    for (size_t i=0; i < statesFSM1.size(); i++){
-        for (size_t j=0; j < statesFSM2.size(); j++)
-            if (statesFSM1[i].end_state || statesFSM2[j].end_state){
-                new_fsm->updateEndState(i*statesFSM1.size()+j+1, true);
-        }
-    }
-    // for(auto state : new_fsm->getStates()) std::cout << state.end_state << std::endl;
+    new_fsm->join(fsm1, fsm2, true, false);
     return new_fsm;
 };
 
@@ -178,15 +168,7 @@ template <typename T>
 std::shared_ptr<FSM<T>> FSM<T>::intersaction(const FSM<T>& fsm1, const FSM<T>& fsm2){
     
     std::shared_ptr<FSM<char>> new_fsm(new FSM<char>);
-    new_fsm->join(fsm1, fsm2);
-    std::vector<FSMState<T>> statesFSM1 = fsm1.getStates();
-    std::vector<FSMState<T>> statesFSM2 = fsm2.getStates();
-    for (size_t i=0; i < statesFSM1.size(); i++){
-        for (size_t j=0; j < statesFSM2.size(); j++){
-            if (statesFSM1[i].end_state && statesFSM2[j].end_state)
-                new_fsm->updateEndState(i*statesFSM1.size()+j+1, true);
-        }
-    }
+    new_fsm->join(fsm1, fsm2, false, true);
     return new_fsm;
 };
 
