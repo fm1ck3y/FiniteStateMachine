@@ -32,8 +32,10 @@ int main(){
 
 
     std::cout << std::endl << "Concat: " << std::endl; 
-    FSM<char>::concat(&fsm_1, &fsm_2);
+    auto fsm_concat = FSM<char>::concat(fsm_1, fsm_2);
+    fsm_concat->print();
 
     std::cout << std::endl << "Intersaction: " << std::endl; 
-    FSM<char>::intersaction(&fsm_1, &fsm_2);
+    auto fsm_intersaction = FSM<char>::intersaction(fsm_1, fsm_2);
+    fsm_intersaction->print();
 }

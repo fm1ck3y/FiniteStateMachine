@@ -10,6 +10,7 @@ class FSM{
         std::vector<FSMState<T>> states;
         std::vector<T> events;
         int** generateMatrix();
+        void join(const FSM<T>& fsm1, const FSM<T>& fsm2);
 
     public:
         FSM();
@@ -23,9 +24,8 @@ class FSM{
         void addEvent(T event);
         void addEvents(std::vector<T> events);
         void updateEndState(int id, bool end_state);
-        static void join(FSM<T>* fsm1, FSM<T>* fsm2, FSM<T>* new_fsm);
-        static void concat(FSM<T>* fsm1, FSM<T>* fsm2);
-        static void intersaction(FSM<T>* fsm1, FSM<T>* fsm2);
+        static std::shared_ptr<FSM<T>> concat(const FSM<T>& fsm1, const FSM<T>& fsm2);
+        static std::shared_ptr<FSM<T>> intersaction(const FSM<T>& fsm1, const FSM<T>& fsm2);
         void print();
         const std::vector<FSMState<T>>& getStates() const { return this->states; }
         const std::vector<T>& getEvents() const { return this->events; }
