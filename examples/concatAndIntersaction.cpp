@@ -17,6 +17,7 @@ int main(){
     };
 
     FSM<char> fsm_1 (events, array_1, end_states_1, actions);
+    std::cout << std::endl << "FSM 1: " << std::endl;
     fsm_1.print();
 
     std::vector<int> end_states_2 {1,3};
@@ -28,10 +29,11 @@ int main(){
     };
 
     FSM<char> fsm_2 (events, array_2, end_states_2, actions);
+    std::cout << std::endl << "FSM 2: " << std::endl;
     fsm_2.print();
 
 
-    std::cout << std::endl << "Concat: " << std::endl; 
+    std::cout << std::endl << "Concat: " << std::endl;
     auto fsm_concat = FSM<char>::concat(fsm_1, fsm_2);
     fsm_concat->print();
 
