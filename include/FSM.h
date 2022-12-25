@@ -4,9 +4,10 @@
 template <typename T>
 class FSM{
     private:
+        int id_counter = 0;
+
         FSMState<T>* current_state = NULL;
         FSMState<T>* init_state = NULL;
-        int id_counter = 0;
         std::vector<FSMState<T>> states;
         std::vector<T> events;
         int** generateMatrix();
@@ -23,7 +24,6 @@ class FSM{
         void addState(FSMState<T>* state);
         void addEvent(T event);
         void addEvents(std::vector<T> events);
-        void updateEndState(int id, bool end_state);
         static std::shared_ptr<FSM<T>> concat(const FSM<T>& fsm1, const FSM<T>& fsm2);
         static std::shared_ptr<FSM<T>> intersaction(const FSM<T>& fsm1, const FSM<T>& fsm2);
         void print();
