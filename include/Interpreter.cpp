@@ -31,7 +31,11 @@ class Interpreter {
 
         bool validateInput(std::string input){
             std::set<char> unique_chars;
+            
             for (size_t i = 0; i < input.size(); i++) unique_chars.insert(input[i]);
+            for (size_t i = 0; i < this->events.size(); i++) unique_chars.insert(this->events[i]);
+            for (size_t i = 0; i < this->events_float.size(); i++) unique_chars.insert(this->events_float[i]);
+
             if (unique_chars.size() > this->events.size() + this->events_float.size()){
                 std::cout << "[ERROR] Incorrect input." << std::endl;
                 return false;
