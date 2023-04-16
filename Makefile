@@ -11,3 +11,5 @@ realNumbers:
 	g++ examples/realNumbers.cpp -o realNumbers.out
 arithmeticExpressions:
 	g++ examples/arithmeticExpressions.cpp -o arithmeticExpressions.out
+arithmeticExpressionsCompiler:
+	g++ examples/arithmeticExpressionsCompiler.cpp -o arithmeticExpressionsCompiler.out
